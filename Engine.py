@@ -321,9 +321,14 @@ def goal():
         seconds = str((time - extra_time) % 60)
         timelist = [minutes,":",seconds.zfill(2)]
     if offense == "Home":
+        if "Howitzer" in home_roster[possession][3]:
+            howitzercheck = 1
+            print("Howitzer activated")
+        else:
+            howitzercheck = 0
         away_stats[8][11] +=1
         shot_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[possession][13],0.25))
-        keeper_roll = max(random.randint(0,30),weightedround(random.gauss(away_roster[8][4],0.25)))+weightedround(random.gauss(away_roster[8][5],0.25))
+        keeper_roll = max(random.randint(0,30),weightedround(random.gauss(away_roster[8][4],0.25)))+weightedround(random.gauss(away_roster[8][5]-howitzercheck,0.25))
         if shot_roll > keeper_roll:
             result = True
             away_stats[8][12] +=1
@@ -336,9 +341,14 @@ def goal():
             print("And the keeper grabs it!")
         
     elif offense == "Away":
+        if "Howitzer" in away_roster[possession][3]:
+            howitzercheck = 1
+            print("Howitzer activated")
+        else:
+            howitzercheck = 0
         home_stats[8][11] +=1
         shot_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[possession][13],0.25))
-        keeper_roll = max(random.randint(0,30),weightedround(random.gauss(home_roster[8][4],0.25)))+weightedround(random.gauss(home_roster[8][5],0.25))
+        keeper_roll = max(random.randint(0,30),weightedround(random.gauss(home_roster[8][4],0.25)))+weightedround(random.gauss(home_roster[8][5]-howitzercheck,0.25))
         if shot_roll > keeper_roll:
             result = True
             home_stats[8][12] +=1
@@ -593,8 +603,12 @@ def passattempt():
     global marking_def
     global time
     time -= weightedround(random.gauss(8,1.5))
-    vision_roll = random.randint(0,40)
     if offense == "Home":
+        if "Tactician" in home_roster[possession][3]:
+            vision_roll = random.randint(1,30)
+            print("Tactician activated")
+        else:
+            vision_roll = random.randint(1,40)
         vision_stat = home_roster[possession][12]
         if vision_roll <= vision_stat:
             i = 0
@@ -658,6 +672,10 @@ def passattempt():
         off_roll = random.randint(10,20)+weightedround(random.gauss(home_roster[z][11],0.25))
         marking_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[y][7],0.25))
         pass_score = pass_roll + off_roll - marking_roll
+        if "Creative" in home_roster[possession][3]:
+            if pass_score > 0:
+                print("What a great pass.")
+                pass_score += 5
         if pass_score < -20:
             result = 1
         elif -20 <= pass_score <= 0:
@@ -675,6 +693,11 @@ def passattempt():
             home_stats[possession][7] += 1
             possession = z
     elif offense == "Away":
+        if "Tactician" in away_roster[possession][3]:
+            vision_roll = random.randint(1,30)
+            print("Tactician activated")
+        else:
+            vision_roll = random.randint(1,40)
         vision_stat = away_roster[possession][12]
         if vision_roll <= vision_stat:
             i = 0
@@ -738,6 +761,10 @@ def passattempt():
         off_roll = random.randint(10,20)+weightedround(random.gauss(away_roster[z][11],0.25))
         marking_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[y][7],0.25))
         pass_score = pass_roll + off_roll - marking_roll
+        if "Creative" in away_roster[possession][3]:
+            if pass_score > 0:
+                print("What a great pass.")
+                pass_score += 5
         if pass_score < -20:
             result = 1
         elif -20 <= pass_score <= 0:
