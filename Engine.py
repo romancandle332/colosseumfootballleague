@@ -27,10 +27,12 @@ away_mid = [3,4,5]
 away_def = [6,7,8]
 away_keep = [9]
 away_keepdepth = [3,3,3,2,2,1]
+away_pk = 0
 home_att = [10,11,12]
 home_mid = [13,14]
 home_def = [15,16,17]
 home_keep = [18]
+home_pk = 2
 home_keepdepth = [3,2,2,2,1,1]
 
 away_roster = []
@@ -284,8 +286,12 @@ def ontarget():
     global possession
     global depth
     global time
-    target_roll = random.randint(1,10 + depth * 10)
     if offense == "Home":
+        if "Long Range" in home_roster[possession][3] and depth > 1:
+            print("Long Range activated")
+            target_roll = random.randint(1,10 + (depth-1) * 10)
+        else:
+            target_roll = random.randint(1,10 + depth * 10)
         y = weightedround(home_roster[possession][14])
         if target_roll > y:
             result = False
@@ -293,6 +299,11 @@ def ontarget():
             result = True
             home_stats[possession][4] += 1
     elif offense == "Away":
+        if "Long Range" in away_roster[possession][3] and depth > 1:
+            print("Long Range activated")
+            target_roll = random.randint(1,10 + (depth-1) * 10)
+        else:
+            target_roll = random.randint(1,10 + depth * 10)
         y = weightedround(away_roster[possession][14])
         if target_roll > y:
             result = False
@@ -304,7 +315,7 @@ def ontarget():
     return result
 
 #is it good
-def goal():
+def goal(x):
     global offense
     global possession
     global depth
@@ -320,46 +331,188 @@ def goal():
         minutes = str((time - extra_time) // 60)
         seconds = str((time - extra_time) % 60)
         timelist = [minutes,":",seconds.zfill(2)]
+    if x == 1:
+        if offense == "Home":
+            if "Howitzer" in home_roster[possession][3]:
+                howitzercheck = 1
+                print("Howitzer activated")
+            else:
+                howitzercheck = 0
+            away_stats[8][11] +=1
+            shot_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[possession][13],0.25))
+            if "Sixth Sense" in away_roster[8][3]:
+                thisroll = random.randint(1,5)
+                if thisroll == 1:
+                    print("Well played by the keeper")
+                    a = max(random.randint(0,30),weightedround(random.gauss(away_roster[8][4],0.25)))
+                    b = max(random.randint(0,30),weightedround(random.gauss(away_roster[8][4],0.25)))
+                    if a > b:
+                        position_roll = a
+                    else:
+                        position_roll = b
+                else:
+                    position_roll = max(random.randint(0,30),weightedround(random.gauss(away_roster[8][4],0.25)))
+            else:
+                position_roll = max(random.randint(0,30),weightedround(random.gauss(away_roster[8][4],0.25)))  
+            keeper_roll = position_roll+weightedround(random.gauss(away_roster[8][5]-howitzercheck,0.25))
+            if shot_roll > keeper_roll:
+                result = True
+                away_stats[8][12] +=1
+                home_stats[possession][5] +=1
+                home_score += 1
+                print("".join(timelist)," AND IT GETS PAST THE KEEPER!",home_roster[possession][2],"scores! The score is now","-".join([str(away_score),str(home_score)]))
+                time -= weightedround(random.gauss(60,10))
+            else:
+                result = False
+                print("And the keeper stops it!")
+            
+        elif offense == "Away":
+            if "Howitzer" in away_roster[possession][3]:
+                howitzercheck = 1
+                print("Howitzer activated")
+            else:
+                howitzercheck = 0
+            home_stats[8][11] +=1
+            shot_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[possession][13],0.25))
+            if "Sixth Sense" in home_roster[8][3]:
+                thisroll = random.randint(1,5)
+                if thisroll == 1:
+                    print("Well played by the keeper")
+                    a = max(random.randint(0,30),weightedround(random.gauss(home_roster[8][4],0.25)))
+                    b = max(random.randint(0,30),weightedround(random.gauss(home_roster[8][4],0.25)))
+                    if a > b:
+                        position_roll = a
+                    else:
+                        position_roll = b
+                else:
+                    position_roll = max(random.randint(0,30),weightedround(random.gauss(home_roster[8][4],0.25)))
+            else:
+                position_roll = max(random.randint(0,30),weightedround(random.gauss(home_roster[8][4],0.25)))  
+            keeper_roll = position_roll+weightedround(random.gauss(home_roster[8][5]-howitzercheck,0.25))
+            if shot_roll > keeper_roll:
+                result = True
+                home_stats[8][12] +=1
+                away_stats[possession][5] +=1
+                away_score += 1
+                print("".join(timelist)," AND IT GETS PAST THE KEEPER!",away_roster[possession][2],"scores! The score is now","-".join([str(away_score),str(home_score)]))
+                time -= weightedround(random.gauss(60,10))
+            else:
+                result = False
+                print("And the keeper stops it!")
+        print("shot:",shot_roll,"keep:",keeper_roll)
+        return result
+    elif x == 2:
+        if offense == "Home":
+            if "Howitzer" in home_roster[possession][3]:
+                howitzercheck = 2
+                print("Howitzer activated")
+            else:
+                howitzercheck = 0
+            away_stats[8][11] +=1
+            shot_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[possession][13],0.25))
+            keeper_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[8][5]-howitzercheck,0.25))
+            if shot_roll > keeper_roll:
+                result = True
+                away_stats[8][12] +=1
+                home_stats[possession][5] +=1
+                home_score += 1
+                print("".join(timelist)," AND IT GETS PAST THE KEEPER!",home_roster[possession][2],"scores! The score is now","-".join([str(away_score),str(home_score)]))
+                time -= weightedround(random.gauss(60,10))
+            else:
+                result = False
+                print("And the keeper stops it!")
+            
+        elif offense == "Away":
+            if "Howitzer" in away_roster[possession][3]:
+                howitzercheck = 2
+                print("Howitzer activated")
+            else:
+                howitzercheck = 0
+            home_stats[8][11] +=1
+            shot_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[possession][13],0.25))  
+            keeper_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[8][5]-howitzercheck,0.25))
+            if shot_roll > keeper_roll:
+                result = True
+                home_stats[8][12] +=1
+                away_stats[possession][5] +=1
+                away_score += 1
+                print("".join(timelist)," AND IT GETS PAST THE KEEPER!",away_roster[possession][2],"scores! The score is now","-".join([str(away_score),str(home_score)]))
+                time -= weightedround(random.gauss(60,10))
+            else:
+                result = False
+                print("And the keeper stops it!")
+        print("shot:",shot_roll,"keep:",keeper_roll)
+        return result
+
+#Does the keeper catch the shot or does it reflect
+def handling():
+    global possession
+    global offense
+    global marking_off
+    global marking_def
+    global depth
+    global time
     if offense == "Home":
-        if "Howitzer" in home_roster[possession][3]:
-            howitzercheck = 1
-            print("Howitzer activated")
+        if "Sticky Hands" in away_roster[8][3]:
+            print("Sticky Hands activated")
+            handling_roll = random.randint(0,25)
         else:
-            howitzercheck = 0
-        away_stats[8][11] +=1
-        shot_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[possession][13],0.25))
-        keeper_roll = max(random.randint(0,30),weightedround(random.gauss(away_roster[8][4],0.25)))+weightedround(random.gauss(away_roster[8][5]-howitzercheck,0.25))
-        if shot_roll > keeper_roll:
+            handling_roll = random.randint(0,30)
+        handle = weightedround(random.gauss(away_roster[8][6],0.25))
+        print("Handle:",handle,"Handling Roll",handling_roll)
+        if handling_roll <= handle:
             result = True
-            away_stats[8][12] +=1
-            home_stats[possession][5] +=1
-            home_score += 1
-            print("".join(timelist)," AND IT GETS PAST THE KEEPER!",home_roster[possession][2],"scores! The score is now","-".join([str(away_score),str(home_score)]))
-            time -= weightedround(random.gauss(60,10))
         else:
             result = False
-            print("And the keeper grabs it!")
-        
     elif offense == "Away":
-        if "Howitzer" in away_roster[possession][3]:
-            howitzercheck = 1
-            print("Howitzer activated")
+        if "Sticky Hands" in home_roster[8][3]:
+            print("Sticky Hands activated")
+            handling_roll = random.randint(0,25)
         else:
-            howitzercheck = 0
-        home_stats[8][11] +=1
-        shot_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[possession][13],0.25))
-        keeper_roll = max(random.randint(0,30),weightedround(random.gauss(home_roster[8][4],0.25)))+weightedround(random.gauss(home_roster[8][5]-howitzercheck,0.25))
-        if shot_roll > keeper_roll:
+            handling_roll = random.randint(0,30)
+        handle = weightedround(random.gauss(home_roster[8][6],0.25))
+        print("Handle:",handle,"Handling Roll",handling_roll)
+        if handling_roll <= handle:
             result = True
-            home_stats[8][12] +=1
-            away_stats[possession][5] +=1
-            away_score += 1
-            print("".join(timelist)," AND IT GETS PAST THE KEEPER!",away_roster[possession][2],"scores! The score is now","-".join([str(away_score),str(home_score)]))
-            time -= weightedround(random.gauss(60,10))
         else:
             result = False
-            print("And the keeper grabs it!")
-    print("shot:",shot_roll,"keep:",keeper_roll)
+    return result
+
+#fouls
+def foul():
+    global possession
+    global offense
+    global marking_off
+    global marking_def
+    global depth
+    foul_roll = random.randint(1,100)
+    if foul_roll < 6:
+        off_def_roll = random.randint(1,3)
+        if off_def_roll == 1:
+            side = 1
+        else:
+            side = 2
+        if offense == "Home":
+            if side == 1:
+                print("Offensive penalty!")
+                offense = "Away"
+                possession = 5
+                result = 1
+            else:
+                print("Defensive penalty!")
+                result = 2
+        elif offense == "Away":
+            if side == 1:
+                print("Offensive penalty!")
+                offense = "Home"
+                possession = 5
+                result = 1
+            else:
+                print("Defensive penalty!")
+                result = 2
+    else:
+        result = 0
+
     return result
 
 #Determining who's guarding who
@@ -570,9 +723,17 @@ def dribble():
     time -= weightedround(random.gauss(5,1.5))
     if offense == "Home":
         away_stats[y][8] += 1
-        dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(home_roster[possession][10],0.25))
-        keeper_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[y][5],0.25))
-        if dribble_roll >= keeper_roll:
+        if "Flashy" in home_roster[possession][3]:
+            print("Flashy activated")
+            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(home_roster[possession][10],0.75))
+        else:
+            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(home_roster[possession][10],0.25))
+        if "Lockdown" in away_roster[y][3]:
+            print("Lockdown activated")
+            tackle_roll = random.randint(5,20)+weightedround(random.gauss(away_roster[y][5],0.25))
+        else:
+            tackle_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[y][5],0.25))
+        if dribble_roll >= tackle_roll:
             result = True
         else:
             print(away_roster[y][2],"on the tackle and steals the ball from",home_roster[possession][2])
@@ -582,9 +743,17 @@ def dribble():
             possession = y
     elif offense == "Away":
         home_stats[y][8] += 1
-        dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(away_roster[possession][10],0.25))
-        keeper_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[y][5],0.25))
-        if dribble_roll >= keeper_roll:
+        if "Flashy" in away_roster[possession][3]:
+            print("Flashy activated")
+            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(away_roster[possession][10],0.75))
+        else:
+            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(away_roster[possession][10],0.25))
+        if "Lockdown" in home_roster[y][3]:
+            print("Lockdown activated")
+            tackle_roll = random.randint(5,20)+weightedround(random.gauss(home_roster[y][5],0.25))
+        else:
+            tackle_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[y][5],0.25))
+        if dribble_roll >= tackle_roll:
             result = True
         else:
             print(home_roster[y][2],"on the tackle and steals the ball from",away_roster[possession][2])
@@ -670,7 +839,15 @@ def passattempt():
         y = marking_def[z]
         pass_roll = random.randint(-10,10)+weightedround(random.gauss(home_roster[possession][9]-10,0.25))
         off_roll = random.randint(10,20)+weightedround(random.gauss(home_roster[z][11],0.25))
-        marking_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[y][7],0.25))
+        if "Shadow" in away_roster[y][3]:
+            thief_roll = random.randint(1,5)
+            if thief_roll == 5:
+                print("Shadow activated")
+                marking_roll = random.randint(10,20)+weightedround(random.gauss(away_roster[y][7],0.25))
+            else:
+                marking_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[y][7],0.25))
+        else:
+            marking_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[y][7],0.25))
         pass_score = pass_roll + off_roll - marking_roll
         if "Creative" in home_roster[possession][3]:
             if pass_score > 0:
@@ -759,7 +936,15 @@ def passattempt():
         y = marking_def[z]
         pass_roll = random.randint(-10,10)+weightedround(random.gauss(away_roster[possession][9]-10,0.25))
         off_roll = random.randint(10,20)+weightedround(random.gauss(away_roster[z][11],0.25))
-        marking_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[y][7],0.25))
+        if "Shadow" in home_roster[y][3]:
+            thief_roll = random.randint(1,5)
+            if thief_roll == 5:
+                print("Shadow activated")
+                marking_roll = random.randint(10,20)+weightedround(random.gauss(home_roster[y][7],0.25))
+            else:
+                marking_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[y][7],0.25))
+        else:
+            marking_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[y][7],0.25))
         pass_score = pass_roll + off_roll - marking_roll
         if "Creative" in away_roster[possession][3]:
             if pass_score > 0:
@@ -972,24 +1157,86 @@ while game == True:
             if ontarget() == True:
                 if offense == "Home":
                     print("Shot taken by",home_roster[possession][2]," and it's on target.")
-                    z = goal()
+                    z = goal(1)
                     if z == True:
                         kickoff_flag = True
                         offense  = "Away"
                         continue
                     elif z == False:
-                        changepossession(1)
-                        continue
+                        t = handling()
+                        if t == True:
+                            print("The keeper holds on!")
+                            changepossession(1)
+                            continue
+                        else:
+                            print("But it bounces away")
+                            bounce_roll = random.randint(1,3)
+                            if bounce_roll == 1:
+                                if offense == "Home":
+                                    ii = home_att.index(random.choice(home_att))
+                                    possession = ii
+                                    depth =1
+                                    print("The ball is collected by",home_roster[possession][2])
+                                elif offense == "Away":
+                                    ii = away_att.index(random.choice(away_att))
+                                    possession = ii
+                                    depth = 1
+                                    print("The ball is collected by",away_roster[possession][2])
+                            else:
+                                if offense == "Home":
+                                    ii = away_att.index(random.choice(away_att))
+                                    possession = ii
+                                    print("The ball is collected by",home_roster[possession][2])
+                                    offense = "Away"
+                                    depth = 3
+                                elif offense == "Away":
+                                    ii = home_att.index(random.choice(home_att))
+                                    possession = ii
+                                    print("The ball is collected by",home_roster[possession][2])
+                                    offense = "Home"
+                                    depth = 3
+                            continue
                 elif offense == "Away":
                     print("Shot taken by",away_roster[possession][2]," and it's on target.")
-                    z = goal ()
+                    z = goal(1)
                     if z == True:
                         kickoff_flag = True
                         offense = "Home"
                         continue
                     elif z == False:
-                        changepossession(1)
-                        continue
+                        t = handling()
+                        if t == True:
+                            print("The keeper holds on!")
+                            changepossession(1)
+                            continue
+                        else:
+                            print("But it bounces away")
+                            bounce_roll = random.randint(1,3)
+                            if bounce_roll == 1:
+                                if offense == "Home":
+                                    ii = home_att.index(random.choice(home_att))
+                                    possession = ii
+                                    depth =1
+                                    print("The ball is collected by",home_roster[possession][2])
+                                elif offense == "Away":
+                                    ii = away_att.index(random.choice(away_att))
+                                    possession = ii
+                                    depth = 1
+                                    print("The ball is collected by",away_roster[possession][2])
+                            else:
+                                if offense == "Home":
+                                    ii = away_att.index(random.choice(away_att))
+                                    possession = ii
+                                    print("The ball is collected by",home_roster[possession][2])
+                                    offense = "Away"
+                                    depth = 3
+                                elif offense == "Away":
+                                    ii = home_att.index(random.choice(home_att))
+                                    possession = ii
+                                    print("The ball is collected by",home_roster[possession][2])
+                                    offense = "Home"
+                                    depth = 3
+                            continue
             else:
                 if offense == "Home":
                     print("Shot taken by",home_roster[possession][2]," but it's off-target.")
@@ -1009,24 +1256,86 @@ while game == True:
                 if ontarget() == True:
                     if offense == "Home":
                         print("Shot taken by",home_roster[possession][2]," and it's on target.")
-                        z = goal()
+                        z = goal(1)
                         if z == True:
                             kickoff_flag = True
                             offense  = "Away"
                             continue
                         elif z == False:
-                            changepossession(1)
-                            continue
+                            t = handling()
+                            if t == True:
+                                print("The keeper holds on!")
+                                changepossession(1)
+                                continue
+                            else:
+                                print("But it bounces away")
+                                bounce_roll = random.randint(1,3)
+                                if bounce_roll == 1:
+                                    if offense == "Home":
+                                        ii = home_att.index(random.choice(home_att))
+                                        possession = ii
+                                        depth =1
+                                        print("The ball is collected by",home_roster[possession][2])
+                                    elif offense == "Away":
+                                        ii = away_att.index(random.choice(away_att))
+                                        possession = ii
+                                        depth = 1
+                                        print("The ball is collected by",away_roster[possession][2])
+                                else:
+                                    if offense == "Home":
+                                        ii = away_att.index(random.choice(away_att))
+                                        possession = ii
+                                        print("The ball is collected by",home_roster[possession][2])
+                                        offense = "Away"
+                                        depth = 3
+                                    elif offense == "Away":
+                                        ii = home_att.index(random.choice(home_att))
+                                        possession = ii
+                                        print("The ball is collected by",home_roster[possession][2])
+                                        offense = "Home"
+                                        depth = 3
+                                continue
                     elif offense == "Away":
                         print("Shot taken by",away_roster[possession][2]," and it's on target.")
-                        z = goal ()
+                        z = goal (1)
                         if z == True:
                             kickoff_flag = True
                             offense = "Home"
                             continue
                         elif z == False:
-                            changepossession(1)
-                            continue
+                            t = handling()
+                            if t == True:
+                                print("The keeper holds on!")
+                                changepossession(1)
+                                continue
+                            else:
+                                print("But it bounces away")
+                                bounce_roll = random.randint(1,3)
+                                if bounce_roll == 1:
+                                    if offense == "Home":
+                                        ii = home_att.index(random.choice(home_att))
+                                        possession = ii
+                                        depth =1
+                                        print("The ball is collected by",home_roster[possession][2])
+                                    elif offense == "Away":
+                                        ii = away_att.index(random.choice(away_att))
+                                        possession = ii
+                                        depth = 1
+                                        print("The ball is collected by",away_roster[possession][2])
+                                else:
+                                    if offense == "Home":
+                                        ii = away_att.index(random.choice(away_att))
+                                        possession = ii
+                                        print("The ball is collected by",home_roster[possession][2])
+                                        offense = "Away"
+                                        depth = 3
+                                    elif offense == "Away":
+                                        ii = home_att.index(random.choice(home_att))
+                                        possession = ii
+                                        print("The ball is collected by",home_roster[possession][2])
+                                        offense = "Home"
+                                        depth = 3
+                                continue
                 else:
                     if offense == "Home":
                         print("Shot taken by",home_roster[possession][2]," but it's off-target.")
@@ -1034,7 +1343,190 @@ while game == True:
                     elif offense == "Away":
                         print("Shot taken by",away_roster[possession][2]," but it's off-target.")
                         changepossession(1)
-                
+        fouling = foul()
+        if fouling == 2:
+            if depth == 2 or depth == 3:
+                print("And the penalty will result in a freekick.")
+                freekick_roll = takeshot(4)
+                if freekick_roll == True:
+                    if ontarget() == True:
+                        if offense == "Home":
+                            print("Shot taken by",home_roster[possession][2]," and it's on target.")
+                            z = goal(1)
+                            if z == True:
+                                kickoff_flag = True
+                                offense  = "Away"
+                                continue
+                            elif z == False:
+                                t = handling()
+                                if t == True:
+                                    print("The keeper holds on!")
+                                    changepossession(1)
+                                    continue
+                                else:
+                                    print("But it bounces away")
+                                    bounce_roll = random.randint(1,3)
+                                    if bounce_roll == 1:
+                                        if offense == "Home":
+                                            ii = home_att.index(random.choice(home_att))
+                                            possession = ii
+                                            depth =1
+                                            print("The ball is collected by",home_roster[possession][2])
+                                        elif offense == "Away":
+                                            ii = away_att.index(random.choice(away_att))
+                                            possession = ii
+                                            depth = 1
+                                            print("The ball is collected by",away_roster[possession][2])
+                                    else:
+                                        if offense == "Home":
+                                            ii = away_att.index(random.choice(away_att))
+                                            possession = ii
+                                            print("The ball is collected by",home_roster[possession][2])
+                                            offense = "Away"
+                                            depth = 3
+                                        elif offense == "Away":
+                                            ii = home_att.index(random.choice(home_att))
+                                            possession = ii
+                                            print("The ball is collected by",home_roster[possession][2])
+                                            offense = "Home"
+                                            depth = 3
+                                    continue
+                        elif offense == "Away":
+                            print("Shot taken by",away_roster[possession][2]," and it's on target.")
+                            z = goal (1)
+                            if z == True:
+                                kickoff_flag = True
+                                offense = "Home"
+                                continue
+                            elif z == False:
+                                t = handling()
+                                if t == True:
+                                    print("The keeper holds on!")
+                                    changepossession(1)
+                                    continue
+                                else:
+                                    print("But it bounces away")
+                                    bounce_roll = random.randint(1,3)
+                                    if bounce_roll == 1:
+                                        if offense == "Home":
+                                            ii = home_att.index(random.choice(home_att))
+                                            possession = ii
+                                            depth =1
+                                            print("The ball is collected by",home_roster[possession][2])
+                                        elif offense == "Away":
+                                            ii = away_att.index(random.choice(away_att))
+                                            possession = ii
+                                            depth = 1
+                                            print("The ball is collected by",away_roster[possession][2])
+                                    else:
+                                        if offense == "Home":
+                                            ii = away_att.index(random.choice(away_att))
+                                            possession = ii
+                                            print("The ball is collected by",home_roster[possession][2])
+                                            offense = "Away"
+                                            depth = 3
+                                        elif offense == "Away":
+                                            ii = home_att.index(random.choice(home_att))
+                                            possession = ii
+                                            print("The ball is collected by",home_roster[possession][2])
+                                            offense = "Home"
+                                            depth = 3
+                                    continue
+                else:
+                    if offense == "Home":
+                        print("Shot taken by",home_roster[possession][2]," but it's off-target.")
+                        changepossession(1)
+                    elif offense == "Away":
+                        print("Shot taken by",away_roster[possession][2]," but it's off-target.")
+                        changepossession(1)
+            elif depth == 1:
+                print("And that's a penalty kick!")
+                if offense == "Home":
+                    possession = home_pk
+                elif offense == "Away":
+                    possession = away_pk
+                if offense == "Home":
+                    print("Shot taken by",home_roster[possession][2]," and it's on target.")
+                    z = goal(2)
+                    if z == True:
+                        kickoff_flag = True
+                        offense  = "Away"
+                        continue
+                    elif z == False:
+                        t = handling()
+                        if t == True:
+                            print("The keeper holds on!")
+                            changepossession(1)
+                            continue
+                        else:
+                            print("But it bounces away")
+                            bounce_roll = random.randint(1,3)
+                            if bounce_roll == 1:
+                                if offense == "Home":
+                                    ii = home_att.index(random.choice(home_att))
+                                    possession = ii
+                                    depth =1
+                                    print("The ball is collected by",home_roster[possession][2])
+                                elif offense == "Away":
+                                    ii = away_att.index(random.choice(away_att))
+                                    possession = ii
+                                    depth = 1
+                                    print("The ball is collected by",away_roster[possession][2])
+                            else:
+                                if offense == "Home":
+                                    ii = away_att.index(random.choice(away_att))
+                                    possession = ii
+                                    print("The ball is collected by",home_roster[possession][2])
+                                    offense = "Away"
+                                    depth = 3
+                                elif offense == "Away":
+                                    ii = home_att.index(random.choice(home_att))
+                                    possession = ii
+                                    print("The ball is collected by",home_roster[possession][2])
+                                    offense = "Home"
+                                    depth = 3
+                            continue
+                elif offense == "Away":
+                    print("Shot taken by",away_roster[possession][2]," and it's on target.")
+                    z = goal(2)
+                    if z == True:
+                        kickoff_flag = True
+                        offense = "Home"
+                        continue
+                    elif z == False:
+                        t = handling()
+                        if t == True:
+                            print("The keeper holds on!")
+                            changepossession(1)
+                            continue
+                        else:
+                            print("But it bounces away")
+                            bounce_roll = random.randint(1,3)
+                            if bounce_roll == 1:
+                                if offense == "Home":
+                                    ii = home_att.index(random.choice(home_att))
+                                    possession = ii
+                                    depth =1
+                                    print("The ball is collected by",home_roster[possession][2])
+                                elif offense == "Away":
+                                    ii = away_att.index(random.choice(away_att))
+                                    possession = ii
+                                    depth = 1
+                                    print("The ball is collected by",away_roster[possession][2])
+                            else:
+                                if offense == "Home":
+                                    ii = away_att.index(random.choice(away_att))
+                                    possession = ii
+                                    print("The ball is collected by",home_roster[possession][2])
+                                    offense = "Away"
+                                    depth = 3
+                                elif offense == "Away":
+                                    ii = home_att.index(random.choice(home_att))
+                                    possession = ii
+                                    print("The ball is collected by",home_roster[possession][2])
+                                    offense = "Home"
+                                    depth = 3
+                            continue
     else:
         if half == 0:
             print("And that's half time! The score is","-".join([str(away_score),str(home_score)]))
