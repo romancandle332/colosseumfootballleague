@@ -211,7 +211,22 @@ print(home_roster)
 #roll extra time
 extra_time = round(max(random.gauss(150,45),0))
 time = 2700 + extra_time
+leadershipbonus = 0
 print("The first half will be 45 minutes and feature",extra_time // 60,"minutes and",extra_time % 60,"seconds of extra time")
+
+#leadership
+def leadership():
+    global leadershipbonus
+    global offense
+    global possession
+    if offense == "Home":
+        if "Leadership" in home_roster[possession][3]:
+            leadershipbonus = 1
+            print(home_roster[possession][2],"looks like a real captain out there.")
+    elif offense == "Away":
+        if "Leadership" in away_roster[possession][3]:
+            leadershipbonus = 1
+            print(away_roster[possession][2],"looks like a real captain out there.")
 
 #get kickoff possession
 def kickoff(x):
@@ -534,9 +549,14 @@ def goal(x):
     global possession
     global depth
     global time
+    global leadershipbonus
+    global marking_off
+    global marking_def
     global away_score
     global home_score
     global time
+    z = marking_off.index(possession)
+    rst = marking_def[z]
     if time - extra_time <= 0:
         minutes = str((time - extra_time) // 60)
         seconds = str(-1*(time - extra_time) % 60)
@@ -552,8 +572,18 @@ def goal(x):
                 print("Howitzer activated")
             else:
                 howitzercheck = 0
+            if "Disruptor" in away_roster[rst][3]:
+                disroll = random.randint(1,5)
+                if disroll == 5:
+                    disruptorcheck = 2
+                    print("Great defense by",away_roster[rst][2],"to impact that shot.")
+                else:
+                    disruptorcheck = 0
+            else:
+                disruptorcheck = 0
             away_stats[8][11] +=1
-            shot_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[possession][13],0.25))
+            shot_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[possession][13]-disruptorcheck,0.25))+leadershipbonus
+            leadershipbonus = 0
             if "Sixth Sense" in away_roster[8][3]:
                 thisroll = random.randint(1,5)
                 if thisroll == 1:
@@ -589,8 +619,18 @@ def goal(x):
                 print("Howitzer activated")
             else:
                 howitzercheck = 0
+            if "Disruptor" in home_roster[rst][3]:
+                disroll = random.randint(1,5)
+                if disroll == 5:
+                    disruptorcheck = 2
+                    print("Great defense by",home_roster[rst][2],"to impact that shot.")
+                else:
+                    disruptorcheck = 0
+            else:
+                disruptorcheck = 0
             home_stats[8][11] +=1
-            shot_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[possession][13],0.25))
+            shot_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[possession][13]-disruptorcheck,0.25))+leadershipbonus
+            leadershipbonus = 0
             if "Sixth Sense" in home_roster[8][3]:
                 thisroll = random.randint(1,5)
                 if thisroll == 1:
@@ -629,7 +669,8 @@ def goal(x):
             else:
                 howitzercheck = 0
             away_stats[8][11] +=1
-            shot_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[possession][13],0.25))
+            shot_roll = random.randint(0,20)+weightedround(random.gauss(home_roster[possession][13],0.25))+leadershipbonus
+            leadershipbonus = 0
             keeper_roll = random.randint(0,20)+weightedround(random.gauss(away_roster[8][5]-howitzercheck,0.25))
             if "Curveball" in home_roster[possession][3]:
                 keeper_roll -= 2
@@ -703,6 +744,79 @@ def handling():
         else:
             result = False
     return result
+
+#bounce
+def bounce():
+    global offense
+    global depth
+    global possession
+    bounce_roll = random.randint(1,3)
+    if bounce_roll == 1:
+        if offense == "Home":
+            if "Puncher" in away_roster[8][3]:
+                punch_roll = random.randint(1,2)
+                if punch_roll == 1:
+                    depth = 2
+                    print("And",away_roster[8][2],"punches that ball upfield!")
+                    possession = random.randint(0,7)
+                else:
+                    print("But it bounces away")
+                    depth = 1
+                    ii = home_att.index(random.choice(home_att))
+                    possession = ii
+            else:
+                print("But it bounces away")
+                depth = 1
+                ii = home_att.index(random.choice(home_att))
+                possession = ii
+            print("The ball is collected by",home_roster[possession][2])
+        elif offense == "Away":
+            if "Puncher" in home_roster[8][3]:
+                punch_roll = random.randint(1,2)
+                if punch_roll == 1:
+                    depth = 2
+                    print("And",home_roster[8][2],"punches that ball upfield!")
+                    possession = random.randint(0,7)
+                else:
+                    print("But it bounces away")
+                    depth = 1
+                    ii = away_att.index(random.choice(away_att))
+                    possession = ii
+            else:
+                print("But it bounces away")
+                depth = 1
+                ii = home_att.index(random.choice(home_att))
+                possession = ii
+            print("The ball is collected by",away_roster[possession][2])
+    else:
+        if offense == "Home":
+            if "Puncher" in away_roster[8][3]:
+                punch_roll = random.randint(1,2)
+                if punch_roll == 1:
+                    depth = 2
+                    print("And",away_roster[8][2],"punches that ball upfield!")
+                    possession = random.randint(0,7)
+                    offense = "Away"
+                else:
+                    ii = away_def.index(random.choice(away_def))
+                    possession = ii
+                    offense = "Away"
+                    depth = 3
+                print("The ball is collected by",home_roster[possession][2])
+        elif offense == "Away":
+            if "Puncher" in home_roster[8][3]:
+                punch_roll = random.randint(1,2)
+                if punch_roll == 1:
+                    depth = 2
+                    print("And",home_roster[8][2],"punches that ball upfield!")
+                    possession = random.randint(0,7)
+                    offense = "Home"
+                else:
+                    ii = home_def.index(random.choice(home_def))
+                    possession = ii
+                    offense = "Home"
+                    depth = 3
+                print("The ball is collected by",home_roster[possession][2])
 
 #fouls
 def foul():
@@ -781,6 +895,7 @@ def dribble():
     global possession
     global offense
     global depth
+    global leadershipbonus
     global marking_off
     global marking_def
     global time
@@ -791,9 +906,11 @@ def dribble():
         away_stats[y][8] += 1
         if "Flashy" in home_roster[possession][3]:
             print("Flashy activated")
-            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(home_roster[possession][10],0.75))
+            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(home_roster[possession][10],0.75))+leadershipbonus
+            leadershipbonus = 0
         else:
-            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(home_roster[possession][10],0.25))
+            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(home_roster[possession][10],0.25))+leadershipbonus
+            leadershipbonus = 0
         if "Lockdown" in away_roster[y][3]:
             print("Lockdown activated")
             tackle_roll = random.randint(5,20)+weightedround(random.gauss(away_roster[y][5],0.25))
@@ -811,9 +928,11 @@ def dribble():
         home_stats[y][8] += 1
         if "Flashy" in away_roster[possession][3]:
             print("Flashy activated")
-            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(away_roster[possession][10],0.75))
+            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(away_roster[possession][10],0.75))+leadershipbonus
+            leadershipbonus = 0
         else:
-            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(away_roster[possession][10],0.25))
+            dribble_roll = max(random.randint(0,20),10)+weightedround(random.gauss(away_roster[possession][10],0.25))+leadershipbonus
+            leadershipbonus = 0
         if "Lockdown" in home_roster[y][3]:
             print("Lockdown activated")
             tackle_roll = random.randint(5,20)+weightedround(random.gauss(home_roster[y][5],0.25))
@@ -834,6 +953,7 @@ def passattempt():
     global possession
     global offense
     global depth
+    global leadershipbonus
     global marking_off
     global marking_def
     global time
@@ -903,7 +1023,8 @@ def passattempt():
                 i += 1
         z = marking_off.index(r)
         y = marking_def[z]
-        pass_roll = random.randint(-10,10)+weightedround(random.gauss(home_roster[possession][9]-10,0.25))
+        pass_roll = random.randint(-10,10)+weightedround(random.gauss(home_roster[possession][9]-10,0.25))+leadershipbonus
+        leadershipbonus = 0
         if "Quick" in home_roster[z][3]:
             quick_roll = random.randint(1,5)
             if quick_roll == 1:
@@ -941,11 +1062,13 @@ def passattempt():
         elif 0 < pass_score < 20:
             result = 3
             home_stats[possession][7] += 1
+            leadership()
             possession = z
         elif pass_score >= 20:
             result = 4
             print("Killer pass by",home_roster[possession][2])
             home_stats[possession][7] += 1
+            leadership()
             possession = z
     elif offense == "Away":
         if "Tactician" in away_roster[possession][3]:
@@ -1012,7 +1135,8 @@ def passattempt():
                 i += 1
         z = marking_off.index(r)
         y = marking_def[z]
-        pass_roll = random.randint(-10,10)+weightedround(random.gauss(away_roster[possession][9]-10,0.25))
+        pass_roll = random.randint(-10,10)+weightedround(random.gauss(away_roster[possession][9]-10,0.25))+leadershipbonus
+        leadershipbonus = 0
         if "Quick" in away_roster[z][3]:
             quick_roll = random.randint(1,5)
             if quick_roll == 1:
@@ -1050,11 +1174,13 @@ def passattempt():
         elif 0 < pass_score < 20:
             result = 3
             away_stats[possession][7] +=1
+            leadership()
             possession = z
         elif pass_score >= 20:
             result = 4
             print("Killer pass by",away_roster[possession][2])
             away_stats[possession][7] +=1
+            leadership()
             possession = z
 
 #change possession macro
@@ -1232,6 +1358,7 @@ kickoff_flag = True
 offense = "Away"
 half = 0
 game = True
+leadershipbonus = 0
 while game == True:
     while time > 0:
         while kickoff_flag == True:
@@ -1242,6 +1369,7 @@ while game == True:
                 kickoff("Home")
             kickoff_flag = False
         time -= weightedround(random.gauss(10,2.5))
+        leadership()
         shotdepth = 5 - depth
         if takeshot(shotdepth) == True:
             if ontarget() == True:
@@ -1259,73 +1387,7 @@ while game == True:
                             changepossession(1)
                             continue
                         else:
-                            bounce_roll = random.randint(1,3)
-                            if bounce_roll == 1:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = home_att.index(random.choice(home_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = away_att.index(random.choice(away_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",away_roster[possession][2])
-                            else:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Away"
-                                        else:
-                                            ii = away_def.index(random.choice(away_def))
-                                            possession = ii
-                                            offense = "Away"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Home"
-                                        else:
-                                            ii = home_def.index(random.choice(home_def))
-                                            possession = ii
-                                            offense = "Home"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
+                            bounce()
                             continue
                 elif offense == "Away":
                     print("Shot taken by",away_roster[possession][2]," and it's on target.")
@@ -1341,73 +1403,7 @@ while game == True:
                             changepossession(1)
                             continue
                         else:
-                            bounce_roll = random.randint(1,3)
-                            if bounce_roll == 1:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = home_att.index(random.choice(home_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = away_att.index(random.choice(away_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",away_roster[possession][2])
-                            else:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Away"
-                                        else:
-                                            ii = away_def.index(random.choice(away_def))
-                                            possession = ii
-                                            offense = "Away"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Home"
-                                        else:
-                                            ii = home_def.index(random.choice(home_def))
-                                            possession = ii
-                                            offense = "Home"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
+                            bounce()
                             continue
             else:
                 if offense == "Home":
@@ -1422,6 +1418,7 @@ while game == True:
         if zz == 1:
             print("And the pass sails into the stands. That'll be the keeper's ball.")
             changepossession(1)
+            leadership()
         elif zz == 4:
             shotdepth = 4 - depth
             if takeshot(shotdepth) == True:
@@ -1441,31 +1438,7 @@ while game == True:
                                 continue
                             else:
                                 print("But it bounces away")
-                                bounce_roll = random.randint(1,3)
-                                if bounce_roll == 1:
-                                    if offense == "Home":
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                        depth =1
-                                        print("The ball is collected by",home_roster[possession][2])
-                                    elif offense == "Away":
-                                        ii = away_att.index(random.choice(away_att))
-                                        possession = ii
-                                        depth = 1
-                                        print("The ball is collected by",away_roster[possession][2])
-                                else:
-                                    if offense == "Home":
-                                        ii = away_att.index(random.choice(away_att))
-                                        possession = ii
-                                        print("The ball is collected by",home_roster[possession][2])
-                                        offense = "Away"
-                                        depth = 3
-                                    elif offense == "Away":
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                        print("The ball is collected by",home_roster[possession][2])
-                                        offense = "Home"
-                                        depth = 3
+                                bounce()
                                 continue
                     elif offense == "Away":
                         print("Shot taken by",away_roster[possession][2]," and it's on target.")
@@ -1481,73 +1454,7 @@ while game == True:
                             changepossession(1)
                             continue
                         else:
-                            bounce_roll = random.randint(1,3)
-                            if bounce_roll == 1:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = home_att.index(random.choice(home_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = away_att.index(random.choice(away_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",away_roster[possession][2])
-                            else:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Away"
-                                        else:
-                                            ii = away_def.index(random.choice(away_def))
-                                            possession = ii
-                                            offense = "Away"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Home"
-                                        else:
-                                            ii = home_def.index(random.choice(home_def))
-                                            possession = ii
-                                            offense = "Home"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
+                            bounce()
                             continue
                 else:
                     if offense == "Home":
@@ -1577,73 +1484,7 @@ while game == True:
                                     changepossession(1)
                                     continue
                                 else:
-                                    bounce_roll = random.randint(1,3)
-                                    if bounce_roll == 1:
-                                        if offense == "Home":
-                                            if "Puncher" in away_roster[8][3]:
-                                                punch_roll = random.randint(1,2)
-                                                if punch_roll == 1:
-                                                    depth = 2
-                                                    print("And",away_roster[8][2],"punches that ball upfield!")
-                                                    possession = random.randint(0,7)
-                                                else:
-                                                    print("But it bounces away")
-                                                    depth = 1
-                                                    ii = home_att.index(random.choice(home_att))
-                                                    possession = ii
-                                            else:
-                                                print("But it bounces away")
-                                                depth = 1
-                                                ii = home_att.index(random.choice(home_att))
-                                                possession = ii
-                                            print("The ball is collected by",home_roster[possession][2])
-                                        elif offense == "Away":
-                                            if "Puncher" in home_roster[8][3]:
-                                                punch_roll = random.randint(1,2)
-                                                if punch_roll == 1:
-                                                    depth = 2
-                                                    print("And",home_roster[8][2],"punches that ball upfield!")
-                                                    possession = random.randint(0,7)
-                                                else:
-                                                    print("But it bounces away")
-                                                    depth = 1
-                                                    ii = away_att.index(random.choice(away_att))
-                                                    possession = ii
-                                            else:
-                                                print("But it bounces away")
-                                                depth = 1
-                                                ii = home_att.index(random.choice(home_att))
-                                                possession = ii
-                                            print("The ball is collected by",away_roster[possession][2])
-                                    else:
-                                        if offense == "Home":
-                                            if "Puncher" in away_roster[8][3]:
-                                                punch_roll = random.randint(1,2)
-                                                if punch_roll == 1:
-                                                    depth = 2
-                                                    print("And",away_roster[8][2],"punches that ball upfield!")
-                                                    possession = random.randint(0,7)
-                                                    offense = "Away"
-                                                else:
-                                                    ii = away_def.index(random.choice(away_def))
-                                                    possession = ii
-                                                    offense = "Away"
-                                                    depth = 3
-                                                print("The ball is collected by",home_roster[possession][2])
-                                        elif offense == "Away":
-                                            if "Puncher" in home_roster[8][3]:
-                                                punch_roll = random.randint(1,2)
-                                                if punch_roll == 1:
-                                                    depth = 2
-                                                    print("And",home_roster[8][2],"punches that ball upfield!")
-                                                    possession = random.randint(0,7)
-                                                    offense = "Home"
-                                                else:
-                                                    ii = home_def.index(random.choice(home_def))
-                                                    possession = ii
-                                                    offense = "Home"
-                                                    depth = 3
-                                                print("The ball is collected by",home_roster[possession][2])
+                                    bounce()
                                     continue
                         elif offense == "Away":
                             print("Shot taken by",away_roster[possession][2]," and it's on target.")
@@ -1659,73 +1500,7 @@ while game == True:
                             changepossession(1)
                             continue
                         else:
-                            bounce_roll = random.randint(1,3)
-                            if bounce_roll == 1:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = home_att.index(random.choice(home_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = away_att.index(random.choice(away_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",away_roster[possession][2])
-                            else:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Away"
-                                        else:
-                                            ii = away_def.index(random.choice(away_def))
-                                            possession = ii
-                                            offense = "Away"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Home"
-                                        else:
-                                            ii = home_def.index(random.choice(home_def))
-                                            possession = ii
-                                            offense = "Home"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
+                            bounce()
                             continue
                 else:
                     if offense == "Home":
@@ -1754,73 +1529,7 @@ while game == True:
                             changepossession(1)
                             continue
                         else:
-                            bounce_roll = random.randint(1,3)
-                            if bounce_roll == 1:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = home_att.index(random.choice(home_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = away_att.index(random.choice(away_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",away_roster[possession][2])
-                            else:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Away"
-                                        else:
-                                            ii = away_def.index(random.choice(away_def))
-                                            possession = ii
-                                            offense = "Away"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Home"
-                                        else:
-                                            ii = home_def.index(random.choice(home_def))
-                                            possession = ii
-                                            offense = "Home"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
+                            bounce()
                             continue
                 elif offense == "Away":
                     print("Shot taken by",away_roster[possession][2]," and it's on target.")
@@ -1836,73 +1545,7 @@ while game == True:
                             changepossession(1)
                             continue
                         else:
-                            bounce_roll = random.randint(1,3)
-                            if bounce_roll == 1:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = home_att.index(random.choice(home_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                        else:
-                                            print("But it bounces away")
-                                            depth = 1
-                                            ii = away_att.index(random.choice(away_att))
-                                            possession = ii
-                                    else:
-                                        print("But it bounces away")
-                                        depth = 1
-                                        ii = home_att.index(random.choice(home_att))
-                                        possession = ii
-                                    print("The ball is collected by",away_roster[possession][2])
-                            else:
-                                if offense == "Home":
-                                    if "Puncher" in away_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",away_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Away"
-                                        else:
-                                            ii = away_def.index(random.choice(away_def))
-                                            possession = ii
-                                            offense = "Away"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
-                                elif offense == "Away":
-                                    if "Puncher" in home_roster[8][3]:
-                                        punch_roll = random.randint(1,2)
-                                        if punch_roll == 1:
-                                            depth = 2
-                                            print("And",home_roster[8][2],"punches that ball upfield!")
-                                            possession = random.randint(0,7)
-                                            offense = "Home"
-                                        else:
-                                            ii = home_def.index(random.choice(home_def))
-                                            possession = ii
-                                            offense = "Home"
-                                            depth = 3
-                                        print("The ball is collected by",home_roster[possession][2])
+                            bounce()
                             continue
     else:
         if half == 0:
