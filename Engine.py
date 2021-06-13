@@ -1,11 +1,12 @@
 import math
 import random
 import csv
+import copy
 import re
 
 #load players
 players = []
-with open('players.csv', newline='') as csvfile:
+with open('players.csv', newline='', encoding="utf8") as csvfile:
      reader = csv.reader(csvfile, delimiter=',')
      for row in reader:
          players.append(row)
@@ -26,14 +27,14 @@ away_att = [1,2]
 away_mid = [3,4,5]
 away_def = [6,7,8]
 away_keep = [9]
-away_keepdepth = [3,3,3,2,2,1]
+away_keepaggressive = "Aggressive"
 away_pk = 0
 home_att = [10,11,12]
 home_mid = [13,14]
 home_def = [15,16,17]
 home_keep = [18]
 home_pk = 2
-home_keepdepth = [3,2,2,2,1,1]
+home_keepaggressive = "Conserative"
 
 away_roster = []
 away_stats = []
@@ -42,6 +43,20 @@ home_stats = []
 
 away_score = 0
 home_score = 0
+
+if away_keepaggressive == "Conserative":
+    away_keepdepth = [3,3,3,2,2]
+elif away_keepaggressive == "Neutral":
+    away_keepdepth = [3,3,2,2,1]
+elif away_keepaggressive == "Aggressive":
+    away_keepdepth = [3,2,2,1,1]
+
+if home_keepaggressive == "Conserative":
+    home_keepdepth = [3,3,3,2,2]
+elif home_keepaggressive == "Neutral":
+    home_keepdepth = [3,3,2,2,1]
+elif home_keepaggressive == "Aggressive":
+    home_keepdepth = [3,2,2,1,1]
 
 for i in away_att:
     index = int(players[i][0])
@@ -977,15 +992,31 @@ def passattempt():
             max_index = vision_bucket.index(max(vision_bucket))
             q = marking_off[max_index]
             r = q
+            if depth == 3:
+                initialdepth = 3
+                roll = random.randint(1,2)
+                if roll == 2:
+                    depth = 2
+                elif roll == 1:
+                    depth = 1
+            elif depth == 2:
+                initialdepth = 2
+                depth = 1
+            elif depth == 1:
+                initialdepth = 1
+                depth = 1
         else:
             if depth == 3:
-                x = random.choice([3,3,2,2])
+                initialdepth = 3
+                x = random.choice([3,3,3,2,2,2,1])
                 depth = x
             elif depth == 2:
-                x = random.choice([3,2,2,2,1,1])
+                initialdepth = 2
+                x = random.choice([3,3,2,2,2,2,1,1,1])
                 depth = x
             elif depth == 1:
-                x = random.choice([2,2,1,1])
+                initialdepth = 1
+                x = random.choice([3,2,2,2,2,2,1,1,1,1,1])
                 depth = x
             if depth == 3:
                 q = random.choice(home_def)
@@ -1052,24 +1083,45 @@ def passattempt():
             if pass_score > 0:
                 print("What a great pass.")
                 pass_score += 5
-        if pass_score < -20:
-            result = 1
-        elif -20 <= pass_score <= 0:
-            result = 2
-            away_stats[y][10] += 1
-            possession = y
-            offense = "Away"
-        elif 0 < pass_score < 20:
-            result = 3
-            home_stats[possession][7] += 1
-            leadership()
-            possession = z
-        elif pass_score >= 20:
-            result = 4
-            print("Killer pass by",home_roster[possession][2])
-            home_stats[possession][7] += 1
-            leadership()
-            possession = z
+        if "Contrattacco" in home_roster[possession][3] and initialdepth == 3 and depth == 1:
+            print(home_roster[possession][2],"tries a quick counter attack!")
+            if pass_score < -20:
+                result = 1
+            elif -20 <= pass_score <= 0:
+                result = 2
+                away_stats[y][10] += 1
+                possession = y
+                offense = "Away"
+            elif 0 < pass_score < 10:
+                result = 3
+                home_stats[possession][7] += 1
+                leadership()
+                possession = z
+            elif pass_score >= 10:
+                result = 4
+                print("Killer pass by",home_roster[possession][2])
+                home_stats[possession][7] += 1
+                leadership()
+                possession = z
+        else:
+            if pass_score < -20:
+                result = 1
+            elif -20 <= pass_score <= 0:
+                result = 2
+                away_stats[y][10] += 1
+                possession = y
+                offense = "Away"
+            elif 0 < pass_score < 20:
+                result = 3
+                home_stats[possession][7] += 1
+                leadership()
+                possession = z
+            elif pass_score >= 20:
+                result = 4
+                print("Killer pass by",home_roster[possession][2])
+                home_stats[possession][7] += 1
+                leadership()
+                possession = z
     elif offense == "Away":
         if "Tactician" in away_roster[possession][3]:
             vision_roll = random.randint(1,30)
@@ -1089,15 +1141,31 @@ def passattempt():
             max_index = vision_bucket.index(max(vision_bucket))
             q = marking_off[max_index]
             r = q
+            if depth == 3:
+                initialdepth = 3
+                roll = random.randint(1,2)
+                if roll == 2:
+                    depth = 2
+                elif roll == 1:
+                    depth = 1
+            elif depth == 2:
+                initialdepth = 2
+                depth = 1
+            elif depth == 1:
+                initialdepth = 1
+                depth = 1
         else:
             if depth == 3:
-                x = random.choice([3,3,2,2])
+                initialdepth = 3
+                x = random.choice([3,3,3,2,2,2,1])
                 depth = x
             elif depth == 2:
-                x = random.choice([3,2,2,2,1,1])
+                initialdepth = 2
+                x = random.choice([3,3,2,2,2,2,1,1,1])
                 depth = x
             elif depth == 1:
-                x = random.choice([2,2,1,1])
+                initialdepth = 1
+                x = random.choice([3,2,2,2,2,2,1,1,1,1,1])
                 depth = x
             if depth == 3:
                 q = random.choice(away_def)
@@ -1164,24 +1232,45 @@ def passattempt():
             if pass_score > 0:
                 print("What a great pass.")
                 pass_score += 5
-        if pass_score < -20:
-            result = 1
-        elif -20 <= pass_score <= 0:
-            result = 2
-            home_stats[y][10] += 1
-            possession = y
-            offense = "Home"
-        elif 0 < pass_score < 20:
-            result = 3
-            away_stats[possession][7] +=1
-            leadership()
-            possession = z
-        elif pass_score >= 20:
-            result = 4
-            print("Killer pass by",away_roster[possession][2])
-            away_stats[possession][7] +=1
-            leadership()
-            possession = z
+        if "Contrattacco" in away_roster[possession][3] and initialdepth == 3 and depth == 1:
+            print(away_roster[possession][2],"tries a quick counter attack!")
+            if pass_score < -20:
+                result = 1
+            elif -20 <= pass_score <= 0:
+                result = 2
+                home_stats[y][10] += 1
+                possession = y
+                offense = "Home"
+            elif 0 < pass_score < 10:
+                result = 3
+                away_stats[possession][7] +=1
+                leadership()
+                possession = z
+            elif pass_score >= 10:
+                result = 4
+                print("Killer pass by",away_roster[possession][2])
+                away_stats[possession][7] +=1
+                leadership()
+                possession = z
+        else:
+            if pass_score < -20:
+                result = 1
+            elif -20 <= pass_score <= 0:
+                result = 2
+                home_stats[y][10] += 1
+                possession = y
+                offense = "Home"
+            elif 0 < pass_score < 20:
+                result = 3
+                away_stats[possession][7] +=1
+                leadership()
+                possession = z
+            elif pass_score >= 20:
+                result = 4
+                print("Killer pass by",away_roster[possession][2])
+                away_stats[possession][7] +=1
+                leadership()
+                possession = z
 
 #change possession macro
 def changepossession(x):
@@ -1564,7 +1653,7 @@ else:
     print("And that's the end of the game! The final score is","-".join([str(away_score),str(home_score)]))
 
 filename ="gamedata.csv"
-with open(filename, "w") as output:
+with open(filename, "w",encoding="utf8") as output:
         writer = csv.writer(output, lineterminator="\n")
         writer.writerows([["Index"]+["Position"]+["Name"]+["GA"]+["GT"]+["GM"]+["PA"]+["PM"]+["TA"]+["TM"]+["INT"]+["SAg"]+["SAl"]])
         writer.writerows(away_stats)

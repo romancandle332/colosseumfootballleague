@@ -8,14 +8,14 @@ firstname = []
 lastname = []
 players = []
 base = []
-countries = ["USA","CAN","MEX"]
+countries = ["USA","CAN","MEX","CRC"]
 position_base = [1,1,2,3,3,4,5,5,6]
 att_skill = ["Long Range","Howitzer","Curveball","Selfish"]
 mid_skill = ["Flashy","Tactician","Creative","Quick"]
-def_skill = ["Shadow","Lockdown","Sweeper","Disruptor"]
+def_skill = ["Shadow","Lockdown","Sweeper","Disruptor","Contrattacco"]
 gk_skill = ["Distributor","Sixth Sense","Sticky Hands","Puncher"]
 gen_skill = ["Trash Talker","Leadership"]
-with open('player_gen.csv', newline='') as csvfile:
+with open('player_gen.csv', newline='',encoding="utf-8") as csvfile:
      reader = csv.reader(csvfile, delimiter=',')
      for row in reader:
          base.append(row)
@@ -71,7 +71,7 @@ while i < players_to_gen:
     country = random.choice(countries)
     cities_file = "cities_"+country+".csv"
     cities = []
-    with open(cities_file, newline='') as csvfile:
+    with open(cities_file, newline='',encoding="utf8") as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for row in reader:
             cities.append(row)
@@ -257,22 +257,40 @@ while i < players_to_gen:
 
     #overall
     if x == 1: #ST
+        fin_p += 1
+        acc_p += 1
+        off_p += 1
         p_overall = weightedround(35 + dri_p/20*7.5 + off_p/20*7.5 + vis_p/20*5 + fin_p/20*20 + acc_p/20*20)
     elif x == 2: #AM
+        vis_p += 1
+        pas_p += 1
+        fin_p += 1
         p_overall = weightedround(35 + pas_p/20*12.5 + dri_p/20*7.5 + off_p/20*10 + vis_p/20*15 + fin_p/20*10 + acc_p/20*5)
     elif x == 3: #MF
+        pas_p += 1
+        dri_p += 1
+        vis_p += 1
         p_overall = weightedround(35 + mar_p/20*5 + tac_p/20*5 + pas_p/20*17.5 + dri_p/20*12.5 + off_p/20*10 + vis_p/20*15)
     elif x == 4: #DM
+        mar_p += 1
+        pas_p += 1
+        vis_p += 1
         p_overall = weightedround(35 + mar_p/20*15.5 + tac_p/20*13 + pas_p/20*14 + dri_p/20*12.5 + vis_p/20*5)
     elif x == 5: #DB
+        mar_p += 1
+        tac_p += 1
+        pas_p += 1
         p_overall = weightedround(35 + mar_p/20*17 + tac_p/20*22.5 + pas_p/20*10 + dri_p/20*7.5 + vis_p/20*3)
     elif x == 6: #GK
+        pos_p += 1
+        rea_p += 1
+        han_p += 1
         p_overall = weightedround(35 + pos_p/20*25 + rea_p/20*25 + han_p/20*10)
     #put it all together
     players.append([position,name,height,weight,city,potential,skill,pos_p,rea_p,han_p,mar_p,tac_p,pas_p,dri_p,off_p,vis_p,fin_p,acc_p,agg_p,p_overall])
     i += 1
 
 filename ="drafteligibles.csv"
-with open(filename, "w",encoding="utf-8") as output:
+with open(filename, "w",encoding="utf8") as output:
         writer = csv.writer(output, lineterminator="\n")
         writer.writerows(players)
